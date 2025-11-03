@@ -182,7 +182,7 @@
       div.className = `idea-card active ${colorClass}`;
       div.innerHTML = `
         <h3>${idea.titulo} – ${idea.nombre}</h3>
-        <p><strong>Descripción:</strong> ${idea.descripcion}</p>
+        ${idea.descripcion ? `<p><strong>Contexto:</strong> ${idea.descripcion}</p>` : ''}
         <p><strong>Impacto:</strong> ${idea.impacto}</p>
       `;
       ideasContainer.appendChild(div);
@@ -230,21 +230,21 @@
         console.log('Headers encontrados:', headers);
         console.log('Total de filas:', rows.length);
         
-        // Buscar índices de columnas (case insensitive y flexible)
+        // Buscar índices de columnas según los encabezados exactos
+        const nombreIdx = headers.findIndex(h => 
+          h.toLowerCase().includes('nombre')
+        );
         const areaIdx = headers.findIndex(h => 
           h.toLowerCase().includes('área') || h.toLowerCase().includes('area')
         );
-        const nombreIdx = headers.findIndex(h => 
-          h.toLowerCase().includes('nombre') || h.toLowerCase().includes('título')
-        );
         const impactoIdx = headers.findIndex(h => 
-          h.toLowerCase().includes('impacto') || h.toLowerCase().includes('descripción')
+          h.toLowerCase().includes('impacto') && h.toLowerCase().includes('observado')
         );
         const publicarIdx = headers.findIndex(h => 
           h.toLowerCase().includes('publicar') || h.toLowerCase().includes('publique')
         );
         
-        console.log('Índices:', { areaIdx, nombreIdx, impactoIdx, publicarIdx });
+        console.log('Índices:', { nombreIdx, areaIdx, impactoIdx, publicarIdx });
         
         const ideasPublicadas = [];
         
@@ -261,15 +261,15 @@
           }
           
           if (debePublicar) {
-            const area = areaIdx !== -1 && row[areaIdx] ? row[areaIdx].v : 'Sin área';
             const nombre = nombreIdx !== -1 && row[nombreIdx] ? row[nombreIdx].v : 'Caso compartido';
-            const impacto = impactoIdx !== -1 && row[impactoIdx] ? row[impactoIdx].v : 'Sin descripción';
+            const area = areaIdx !== -1 && row[areaIdx] ? row[areaIdx].v : 'Sin área';
+            const impactoObservado = impactoIdx !== -1 && row[impactoIdx] ? row[impactoIdx].v : 'Sin impacto registrado';
             
             ideasPublicadas.push({
               nombre: area,
               titulo: nombre,
-              descripcion: impacto,
-              impacto: 'Caso enviado por formulario'
+              descripcion: null, // Ya no se usa descripción
+              impacto: impactoObservado
             });
           }
         }
