@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nube de Ideas GenIA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #2800c8;
+      margin-bottom: 10px;
+    }
+    .idea {
+      background: #fff;
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: none;
+    }
+    .idea.active {
+      display: block;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .idea h3 {
+      color: #0F0F72;
+      margin-bottom: 5px;
+    }
+    .idea p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌟 Historias GenIA: Nube de Ideas</h2>
+  <div id="ideasContainer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js"></script>
+  <script>
+    const ideasFijas = [
+      {
+        nombre: "Atención al Cliente",
+        titulo: "Autorización urgente con empatía",
+        descripcion: "Respuesta por WhatsApp a un paciente que necesitaba autorización urgente.",
+        impacto: "Reducción del tiempo de respuesta en un 40%."
+      },
+      {
+        nombre: "Atención al Cliente",
+        titulo: "Consulta sobre cobertura de medicamentos",
+        descripcion: "Explicación formal y cálida sobre cobertura de medicamentos.",
+        impacto: "Evitó una segunda consulta."
+      },
+      {
+        nombre: "Atención al Cliente",
+        titulo: "Reclamo por facturación",
+        descripcion: "Mensaje claro y asertivo explicando el proceso de revisión.",
+        impacto: "Mejor percepción del servicio."
+      },
+      {
+        nombre: "Atención a Discapacidad",
+        titulo: "Transporte cubierto por CUD",
+        descripcion: "Respuesta con marco legal y pasos para solicitar el beneficio.",
+        impacto: "Acceso sin demoras y con claridad."
+      },
+      {
+        nombre: "Operaciones & CX",
+        titulo: "Análisis de reclamos con propuesta de mejora",
+        descripcion: "Automatización en validación de datos.",
+        impacto: "Reducción del 25% en reclamos."
+      }
+    ];
+
+    const ideasContainer = document.getElementById('ideasContainer');
+    let todasLasIdeas = [...ideasFijas];
+    let index = 0;
+
+    function mostrarIdea() {
+      ideasContainer.innerHTML = '';
+      const idea = todasLasIdeas[index];
+      const div = document.createElement('div');
+      div.className = 'idea active';
+      div.innerHTML = `
+        <h3>${idea.titulo} – ${idea.nombre}</h3>
+        <p><strong>Descripción:</strong> ${idea.descripcion}</p>
+        <p><strong>Impacto:</strong> ${idea.impacto}</p>
+      `;
+      ideasContainer.appendChild(div);
+      index = (index + 1) % todasLasIdeas.length;
+    }
+
+    function cargarDesdeGoogleSheet() {
+      Tabletop.init({
+        key: '1QOPB17cKp3y0NNj8CI1DztGEj6jWJ94lYKt9UxDySGE',
+        simpleSheet: true,
+        callback: function(data) {
+          const ideasPublicadas = data.filter(row => row['¿Querés que tu caso se publique en el sitio?']?.toLowerCase() === 'sí');
+          const ideasFormateadas = ideasPublicadas.map(row => ({
+            nombre: row['Área'] || 'Sin área',
+            titulo: row['Nombre'] || 'Caso compartido',
+            descripcion: row['Impacto observado'] || 'Sin descripción',
+            impacto: 'Caso enviado por formulario'
+          }));
+          todasLasIdeas = [...ideasFijas, ...ideasFormateadas];
+        }
+      });
+    }
+
+    cargarDesdeGoogleSheet();
+    mostrarIdea();
+    setInterval(mostrarIdea, 8000);
+  </script>
+</body>
+</html>
