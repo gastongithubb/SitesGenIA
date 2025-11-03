@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nube de Ideas GenIA</title>
   <style>
     :root {
@@ -22,6 +23,18 @@
     h2 {
       color: var(--azul-konecta);
       font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .contador {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .agradecimiento {
+      font-size: 16px;
+      color: #008000;
       margin-bottom: 20px;
     }
 
@@ -62,12 +75,6 @@
     .color-4 { background: #f3e5f5; border-left: 6px solid #8e24aa; }
     .color-5 { background: #fff3e0; border-left: 6px solid #fb8c00; }
 
-    .footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #888;
-    }
-
     .boton-formulario {
       margin-top: 20px;
       display: inline-block;
@@ -83,17 +90,41 @@
     .boton-formulario:hover {
       background-color: #1e009e;
     }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .error-message {
+      color: #d32f2f;
+      font-size: 14px;
+      margin: 20px auto;
+      max-width: 600px;
+      padding: 15px;
+      background: #ffebee;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .loading {
+      color: #555;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
 
   <h2>🌟 Historias GenIA: Nube de Ideas</h2>
+  <div class="contador loading" id="contadorCasos">⏳ Cargando datos...</div>
+  <div class="agradecimiento" id="mensajeAgradecimiento"></div>
+  <div class="error-message" id="errorMessage"></div>
   <div id="ideasContainer"></div>
 
-  <a class="boton-formulario" href="https://forms.gle/4ecRKfGujkzVv2P98" target="_blank">Compartí tu caso</a>
+  <a class="boton-formulario" href="https://docs.google.com/forms/d/e/1FAIpQLSeF1MGVmSmG72-_wcSHX0-tnLhGKuxHA6CK4qoqtU8A_5hYsA/viewform" target="_blank">Compartí tu caso</a>
   <div class="footer">Casos reales + ejemplos testigos para inspirar a todo el equipo</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js"></script>
   <script>
     const ideasFijas = [
       {
@@ -129,8 +160,18 @@
     ];
 
     const ideasContainer = document.getElementById('ideasContainer');
+    const contadorCasos = document.getElementById('contadorCasos');
+    const mensajeAgradecimiento = document.getElementById('mensajeAgradecimiento');
+    const errorMessage = document.getElementById('errorMessage');
     let todasLasIdeas = [];
     let index = 0;
+    let intervalo = null;
+
+    function mostrarError(mensaje) {
+      errorMessage.textContent = mensaje;
+      errorMessage.style.display = 'block';
+      console.error(mensaje);
+    }
 
     function mostrarIdea() {
       if (todasLasIdeas.length === 0) return;
@@ -149,35 +190,124 @@
     }
 
     function iniciarRotacion() {
+      if (intervalo) clearInterval(intervalo);
       mostrarIdea();
-      setInterval(mostrarIdea, 8000);
+      intervalo = setInterval(mostrarIdea, 8000);
     }
 
-    function cargarDesdeGoogleSheet() {
-      Tabletop.init({
-        key: '10XU4PMCJeAE5az01DB6jagNZDmigO6xXsV-kTmdMjWA',
-        simpleSheet: true,
-        callback: function(data) {
-          const ideasPublicadas = data.filter(row =>
-            row['¿Querés que tu caso se publique en el sitio?']?.toLowerCase().trim() === 'sí'
-          );
-          if (ideasPublicadas.length > 0) {
-            todasLasIdeas = ideasPublicadas.map(row => ({
-              nombre: row['Área'] || 'Sin área',
-              titulo: row['Nombre'] || 'Caso compartido',
-              descripcion: row['Impacto observado'] || 'Sin descripción',
-              impacto: 'Caso enviado por formulario'
-            }));
-          } else {
-            todasLasIdeas = [...ideasFijas];
-          }
-          index = 0;
-          iniciarRotacion();
+    async function cargarDesdeGoogleSheet() {
+      // ID original del sheet (no el ID de publicación)
+      const SHEET_ID = '10XU4PMCJeAE5az01DB6jagNZDmigO6xXsV-kTmdMjWA';
+      
+      // URL usando Google Visualization API (funciona con sheets públicos)
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Respuestas%20de%20formulario%201`;
+
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      });
+        
+        const text = await response.text();
+        
+        // Google devuelve JSONP, necesitamos extraer el JSON
+        const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+        
+        if (!jsonString) {
+          throw new Error('No se pudo parsear la respuesta de Google Sheets');
+        }
+        
+        const data = JSON.parse(jsonString[1]);
+        
+        if (!data.table || !data.table.rows) {
+          throw new Error('Formato de datos inesperado');
+        }
+        
+        const rows = data.table.rows;
+        const headers = data.table.cols.map(col => col.label || '');
+        
+        console.log('Headers encontrados:', headers);
+        console.log('Total de filas:', rows.length);
+        
+        // Buscar índices de columnas (case insensitive y flexible)
+        const areaIdx = headers.findIndex(h => 
+          h.toLowerCase().includes('área') || h.toLowerCase().includes('area')
+        );
+        const nombreIdx = headers.findIndex(h => 
+          h.toLowerCase().includes('nombre') || h.toLowerCase().includes('título')
+        );
+        const impactoIdx = headers.findIndex(h => 
+          h.toLowerCase().includes('impacto') || h.toLowerCase().includes('descripción')
+        );
+        const publicarIdx = headers.findIndex(h => 
+          h.toLowerCase().includes('publicar') || h.toLowerCase().includes('publique')
+        );
+        
+        console.log('Índices:', { areaIdx, nombreIdx, impactoIdx, publicarIdx });
+        
+        const ideasPublicadas = [];
+        
+        // Procesar filas
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i].c;
+          if (!row) continue;
+          
+          // Si hay columna de publicar, verificarla
+          let debePublicar = true;
+          if (publicarIdx !== -1 && row[publicarIdx]) {
+            const publicar = row[publicarIdx].v?.toString().toLowerCase().trim();
+            debePublicar = (publicar === 'sí' || publicar === 'si');
+          }
+          
+          if (debePublicar) {
+            const area = areaIdx !== -1 && row[areaIdx] ? row[areaIdx].v : 'Sin área';
+            const nombre = nombreIdx !== -1 && row[nombreIdx] ? row[nombreIdx].v : 'Caso compartido';
+            const impacto = impactoIdx !== -1 && row[impactoIdx] ? row[impactoIdx].v : 'Sin descripción';
+            
+            ideasPublicadas.push({
+              nombre: area,
+              titulo: nombre,
+              descripcion: impacto,
+              impacto: 'Caso enviado por formulario'
+            });
+          }
+        }
+        
+        console.log('Ideas publicadas:', ideasPublicadas.length);
+        
+        if (ideasPublicadas.length > 0) {
+          todasLasIdeas = ideasPublicadas;
+          contadorCasos.textContent = `🧮 Casos publicados: ${ideasPublicadas.length}`;
+          contadorCasos.className = 'contador';
+          mensajeAgradecimiento.textContent = `💬 ¡Gracias por compartir tu experiencia! Tu aporte inspira a todo el equipo.`;
+        } else {
+          todasLasIdeas = [...ideasFijas];
+          contadorCasos.textContent = `🧮 Casos publicados: 0 (mostrando ejemplos)`;
+          contadorCasos.className = 'contador';
+          mensajeAgradecimiento.textContent = ``;
+        }
+        
+        index = 0;
+        iniciarRotacion();
+        
+      } catch (error) {
+        console.error('Error detallado:', error);
+        mostrarError(`Error al cargar datos: ${error.message}. Mostrando ejemplos.`);
+        todasLasIdeas = [...ideasFijas];
+        contadorCasos.textContent = `🧮 Mostrando ejemplos`;
+        contadorCasos.className = 'contador';
+        index = 0;
+        iniciarRotacion();
+      }
     }
 
-    cargarDesdeGoogleSheet();
+    // Iniciar carga cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', cargarDesdeGoogleSheet);
+    } else {
+      cargarDesdeGoogleSheet();
+    }
   </script>
 </body>
 </html>
