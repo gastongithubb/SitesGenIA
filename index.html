@@ -6,7 +6,7 @@
   <style>
     :root {
       --azul-konecta: #2800c8;
-      --gris-suave: #fffff;
+      --gris-suave: #f5f5f5;
       --texto: #333;
       --borde: #dcdcdc;
     }
@@ -116,6 +116,7 @@
     let index = 0;
 
     function mostrarIdea() {
+      if (todasLasIdeas.length === 0) return;
       ideasContainer.innerHTML = '';
       const idea = todasLasIdeas[index];
       const colorClass = `color-${(index % 5) + 1}`;
@@ -130,12 +131,19 @@
       index = (index + 1) % todasLasIdeas.length;
     }
 
+    function iniciarRotacion() {
+      mostrarIdea();
+      setInterval(mostrarIdea, 8000);
+    }
+
     function cargarDesdeGoogleSheet() {
       Tabletop.init({
-        key: '1QOPB17cKp3y0NNj8CI1DztGEj6jWJ94lYKt9UxDySGE',
+        key: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsUKzZi69mGTwP6qLXGEWzVh9T3n4Va23ggprvlUM66ezdBsoPY_dMJ2CyIWAlGs5cSDsI-b3hRbUo/pubhtml',
         simpleSheet: true,
         callback: function(data) {
-          const ideasPublicadas = data.filter(row => row['¿Querés que tu caso se publique en el sitio?']?.toLowerCase() === 'sí');
+          const ideasPublicadas = data.filter(row =>
+            row['¿Querés que tu caso se publique en el sitio?']?.toLowerCase().trim() === 'sí'
+          );
           if (ideasPublicadas.length > 0) {
             todasLasIdeas = ideasPublicadas.map(row => ({
               nombre: row['Área'] || 'Sin área',
@@ -146,13 +154,13 @@
           } else {
             todasLasIdeas = [...ideasFijas];
           }
+          index = 0;
+          iniciarRotacion();
         }
       });
     }
 
     cargarDesdeGoogleSheet();
-    mostrarIdea();
-    setInterval(mostrarIdea, 8000);
   </script>
 </body>
 </html>
