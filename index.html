@@ -276,15 +276,16 @@
         
         console.log('Ideas publicadas:', ideasPublicadas.length);
         
+        // Siempre combinar ideas fijas + publicadas
+        todasLasIdeas = [...ideasFijas, ...ideasPublicadas];
+        
+        const totalCasos = ideasFijas.length + ideasPublicadas.length;
+        contadorCasos.textContent = `🧮 Total de casos: ${totalCasos} (${ideasFijas.length} ejemplos + ${ideasPublicadas.length} del equipo)`;
+        contadorCasos.className = 'contador';
+        
         if (ideasPublicadas.length > 0) {
-          todasLasIdeas = ideasPublicadas;
-          contadorCasos.textContent = `🧮 Casos publicados: ${ideasPublicadas.length}`;
-          contadorCasos.className = 'contador';
           mensajeAgradecimiento.textContent = `💬 ¡Gracias por compartir tu experiencia! Tu aporte inspira a todo el equipo.`;
         } else {
-          todasLasIdeas = [...ideasFijas];
-          contadorCasos.textContent = `🧮 Casos publicados: 0 (mostrando ejemplos)`;
-          contadorCasos.className = 'contador';
           mensajeAgradecimiento.textContent = ``;
         }
         
