@@ -4,39 +4,67 @@
   <meta charset="UTF-8" />
   <title>Nube de Ideas GenIA</title>
   <style>
+    :root {
+      --azul-konecta: #2800c8;
+      --azul-claro: #e6e9ff;
+      --gris-suave: #f5f5f5;
+      --texto: #333;
+      --borde: #dcdcdc;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: var(--gris-suave);
+      margin: 0;
+      padding: 40px 20px;
       text-align: center;
     }
+
     h2 {
-      color: #2800c8;
-      margin-bottom: 10px;
+      color: var(--azul-konecta);
+      font-size: 28px;
+      margin-bottom: 20px;
     }
-    .idea {
-      background: #fff;
-      padding: 20px;
+
+    .idea-card {
+      background: white;
+      border: 1px solid var(--borde);
+      border-left: 6px solid var(--azul-konecta);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 25px;
       margin: 0 auto;
       max-width: 600px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       display: none;
+      text-align: left;
+      animation: fadeIn 0.8s ease-in-out;
     }
-    .idea.active {
+
+    .idea-card.active {
       display: block;
-      animation: fadeIn 1s ease-in-out;
     }
+
+    .idea-card h3 {
+      margin-top: 0;
+      color: var(--azul-konecta);
+      font-size: 20px;
+    }
+
+    .idea-card p {
+      color: var(--texto);
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
     @keyframes fadeIn {
-      from {opacity: 0;}
-      to {opacity: 1;}
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
     }
-    .idea h3 {
-      color: #0F0F72;
-      margin-bottom: 5px;
-    }
-    .idea p {
-      margin: 5px 0;
+
+    .footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #888;
     }
   </style>
 </head>
@@ -44,6 +72,8 @@
 
   <h2>🌟 Historias GenIA: Nube de Ideas</h2>
   <div id="ideasContainer"></div>
+
+  <div class="footer">Casos reales + ejemplos testigos para inspirar a todo el equipo</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js"></script>
   <script>
@@ -88,7 +118,7 @@
       ideasContainer.innerHTML = '';
       const idea = todasLasIdeas[index];
       const div = document.createElement('div');
-      div.className = 'idea active';
+      div.className = 'idea-card active';
       div.innerHTML = `
         <h3>${idea.titulo} – ${idea.nombre}</h3>
         <p><strong>Descripción:</strong> ${idea.descripcion}</p>
