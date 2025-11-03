@@ -6,7 +6,6 @@
   <style>
     :root {
       --azul-konecta: #2800c8;
-      --azul-claro: #e6e9ff;
       --gris-suave: #f5f5f5;
       --texto: #333;
       --borde: #dcdcdc;
@@ -27,17 +26,15 @@
     }
 
     .idea-card {
-      background: white;
-      border: 1px solid var(--borde);
-      border-left: 6px solid var(--azul-konecta);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       padding: 25px;
       margin: 0 auto;
       max-width: 600px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       display: none;
       text-align: left;
       animation: fadeIn 0.8s ease-in-out;
+      color: var(--texto);
     }
 
     .idea-card.active {
@@ -46,12 +43,10 @@
 
     .idea-card h3 {
       margin-top: 0;
-      color: var(--azul-konecta);
       font-size: 20px;
     }
 
     .idea-card p {
-      color: var(--texto);
       margin: 8px 0;
       font-size: 16px;
     }
@@ -60,6 +55,12 @@
       from {opacity: 0; transform: translateY(10px);}
       to {opacity: 1; transform: translateY(0);}
     }
+
+    .color-1 { background: #e6e9ff; border-left: 6px solid #2800c8; }
+    .color-2 { background: #e0f7fa; border-left: 6px solid #00acc1; }
+    .color-3 { background: #fce4ec; border-left: 6px solid #d81b60; }
+    .color-4 { background: #f3e5f5; border-left: 6px solid #8e24aa; }
+    .color-5 { background: #fff3e0; border-left: 6px solid #fb8c00; }
 
     .footer {
       margin-top: 40px;
@@ -118,7 +119,8 @@
       ideasContainer.innerHTML = '';
       const idea = todasLasIdeas[index];
       const div = document.createElement('div');
-      div.className = 'idea-card active';
+      const colorClass = `color-${(index % 5) + 1}`;
+      div.className = `idea-card active ${colorClass}`;
       div.innerHTML = `
         <h3>${idea.titulo} – ${idea.nombre}</h3>
         <p><strong>Descripción:</strong> ${idea.descripcion}</p>
