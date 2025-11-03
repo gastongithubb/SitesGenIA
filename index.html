@@ -6,7 +6,7 @@
   <style>
     :root {
       --azul-konecta: #2800c8;
-      --gris-suave: #f5f5f5;
+      --gris-suave: #fffff;
       --texto: #333;
       --borde: #dcdcdc;
     }
@@ -112,14 +112,14 @@
     ];
 
     const ideasContainer = document.getElementById('ideasContainer');
-    let todasLasIdeas = [...ideasFijas];
+    let todasLasIdeas = [];
     let index = 0;
 
     function mostrarIdea() {
       ideasContainer.innerHTML = '';
       const idea = todasLasIdeas[index];
-      const div = document.createElement('div');
       const colorClass = `color-${(index % 5) + 1}`;
+      const div = document.createElement('div');
       div.className = `idea-card active ${colorClass}`;
       div.innerHTML = `
         <h3>${idea.titulo} – ${idea.nombre}</h3>
@@ -136,13 +136,16 @@
         simpleSheet: true,
         callback: function(data) {
           const ideasPublicadas = data.filter(row => row['¿Querés que tu caso se publique en el sitio?']?.toLowerCase() === 'sí');
-          const ideasFormateadas = ideasPublicadas.map(row => ({
-            nombre: row['Área'] || 'Sin área',
-            titulo: row['Nombre'] || 'Caso compartido',
-            descripcion: row['Impacto observado'] || 'Sin descripción',
-            impacto: 'Caso enviado por formulario'
-          }));
-          todasLasIdeas = [...ideasFijas, ...ideasFormateadas];
+          if (ideasPublicadas.length > 0) {
+            todasLasIdeas = ideasPublicadas.map(row => ({
+              nombre: row['Área'] || 'Sin área',
+              titulo: row['Nombre'] || 'Caso compartido',
+              descripcion: row['Impacto observado'] || 'Sin descripción',
+              impacto: 'Caso enviado por formulario'
+            }));
+          } else {
+            todasLasIdeas = [...ideasFijas];
+          }
         }
       });
     }
